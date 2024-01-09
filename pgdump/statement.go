@@ -16,12 +16,12 @@ func getQueryStatement(table string, cols []column) string {
 			if count > 0 {
 				buf.WriteString(", ")
 			}
-			buf.WriteString(quoteColumn(col.Name))
+			buf.WriteString(quoteIdentifier(col.Name))
 			count++
 		}
 	}
 
-	buf.WriteString(" FROM " + table)
+	buf.WriteString(" FROM " + quoteIdentifier(table))
 
 	return buf.String()
 }
@@ -31,7 +31,7 @@ func getQueryStatement(table string, cols []column) string {
 func getInsertStatement(table string, cols []column, opts *Options) string {
 	var buf bytes.Buffer
 
-	buf.WriteString("INSERT INTO " + table + " (")
+	buf.WriteString("INSERT INTO " + quoteIdentifier(table) + " (")
 	count := 0
 
 	for _, col := range cols {
@@ -39,7 +39,7 @@ func getInsertStatement(table string, cols []column, opts *Options) string {
 			if count > 0 {
 				buf.WriteString(", ")
 			}
-			buf.WriteString(quoteColumn(col.Name))
+			buf.WriteString(quoteIdentifier(col.Name))
 			count++
 		}
 	}
@@ -67,7 +67,7 @@ func getInsertStatement(table string, cols []column, opts *Options) string {
 				if count > 0 {
 					buf.WriteString(", ")
 				}
-				buf.WriteString(quoteColumn(col.Name) + "=EXCLUDED." + quoteColumn(col.Name))
+				buf.WriteString(quoteIdentifier(col.Name) + "=EXCLUDED." + quoteIdentifier(col.Name))
 				count++
 			}
 		}
@@ -80,6 +80,6 @@ func getInsertStatement(table string, cols []column, opts *Options) string {
 	return buf.String()
 }
 
-func quoteColumn(col string) string {
+func quoteIdentifier(col string) string {
 	return "\"" + col + "\""
 }
