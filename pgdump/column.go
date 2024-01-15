@@ -155,15 +155,27 @@ func (col column) literal() string {
 		return strconv.FormatFloat(vf64, 'f', -1, 64)
 	case "decimal", "numeric", "money", "character varying", "varchar", "character", "char", "text", "binary", "json", "jsonb", "tsvector":
 		if col.Array {
+			var literal string
 			vs := *col.value.(*pq.StringArray)
 			if len(vs) == 0 {
-				return "'{}'"
+				literal = "'{}'"
 			}
 			literals := make([]string, len(vs))
 			for i, x := range vs {
+				// Try to unquote - if there's an error, use original value
+				if col.Type == "json" {
+					s, err := strconv.Unquote(x)
+					if err == nil {
+						x = s
+					}
+				}
 				literals[i] = pq.QuoteLiteral(x)
 			}
-			return "ARRAY[" + strings.Join(literals, ", ") + "]"
+			literal = "ARRAY[" + strings.Join(literals, ", ") + "]"
+			if col.Type == "json" || col.Type == "jsonb" {
+				literal += "::" + col.Type + "[]"
+			}
+			return literal
 		}
 
 		var vstr string
