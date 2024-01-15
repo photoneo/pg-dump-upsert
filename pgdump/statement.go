@@ -2,6 +2,8 @@ package pgdump
 
 import (
 	"bytes"
+
+	"github.com/lib/pq"
 )
 
 // getQueryStatement returns SELECT statement to retrieve rows to dump.
@@ -16,12 +18,12 @@ func getQueryStatement(table string, cols []column) string {
 			if count > 0 {
 				buf.WriteString(", ")
 			}
-			buf.WriteString(quoteIdentifier(col.Name))
+			buf.WriteString(pq.QuoteIdentifier(col.Name))
 			count++
 		}
 	}
 
-	buf.WriteString(" FROM " + quoteIdentifier(table))
+	buf.WriteString(" FROM " + pq.QuoteIdentifier(table))
 
 	return buf.String()
 }
@@ -31,7 +33,7 @@ func getQueryStatement(table string, cols []column) string {
 func getInsertStatement(table string, cols []column, opts *Options) string {
 	var buf bytes.Buffer
 
-	buf.WriteString("INSERT INTO " + quoteIdentifier(table) + " (")
+	buf.WriteString("INSERT INTO " + pq.QuoteIdentifier(table) + " (")
 	count := 0
 
 	for _, col := range cols {
@@ -39,7 +41,7 @@ func getInsertStatement(table string, cols []column, opts *Options) string {
 			if count > 0 {
 				buf.WriteString(", ")
 			}
-			buf.WriteString(quoteIdentifier(col.Name))
+			buf.WriteString(pq.QuoteIdentifier(col.Name))
 			count++
 		}
 	}
@@ -67,7 +69,7 @@ func getInsertStatement(table string, cols []column, opts *Options) string {
 				if count > 0 {
 					buf.WriteString(", ")
 				}
-				buf.WriteString(quoteIdentifier(col.Name) + "=EXCLUDED." + quoteIdentifier(col.Name))
+				buf.WriteString(pq.QuoteIdentifier(col.Name) + "=EXCLUDED." + pq.QuoteIdentifier(col.Name))
 				count++
 			}
 		}
@@ -78,8 +80,4 @@ func getInsertStatement(table string, cols []column, opts *Options) string {
 	buf.WriteString(";\n")
 
 	return buf.String()
-}
-
-func quoteIdentifier(col string) string {
-	return "\"" + col + "\""
 }
